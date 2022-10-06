@@ -15,7 +15,7 @@ Matrix::Matrix(std::vector<std::vector<int>> dat) {
     data = dat;
 }
 
-bool operator == (Matrix m1, Matrix m2) {
+bool operator == (Matrix& m1, Matrix& m2) {
     return m1.data == m2.data;
 }
 
@@ -82,21 +82,22 @@ void Matrix::print() {
 Matrix operator * (Matrix t1, Matrix t2) {
     std::vector<std::vector<int>> tdata(t1.data.size(), std::vector<int>(t2.data[0].size()));
     for (int x = 0; x < t1.data.size(); ++x)
-      for (int z = 0, sum = 0; z < t2.data[0].size(); tdata[x][z++] = sum, sum = 0)
+      for (int z = 0, sum = 0; z < t2.data[0].size(); tdata[x][z++] = sum, sum = 0) {
         for (int y = 0; y < t1.data[0].size(); ++y)
           sum += t1.data[x][y] * t2.data[y][z];
+        //std::cout << sum << std::endl;
+      }
     return Matrix(tdata);
 }
 
-int log2(int x)
-{
+int log2(int x) {
     int full_X = 1;
     while (full_X < x)
         full_X <<= 1;
     return full_X >> 1;
 }
 
-std::vector<std::vector<Matrix>> separating(Matrix t) {
+std::vector<std::vector<Matrix>> separating(Matrix& t) {
     int X = t.data.size(), Y = t.data[0].size();
     int X2 = log2(X), Y2 = log2(Y);
     std::vector<std::vector<Matrix>> ret(2, std::vector<Matrix>(2, Matrix(X2, Y2)));
@@ -115,7 +116,7 @@ std::vector<std::vector<Matrix>> separating(Matrix t) {
     return ret;
 }
 
-Matrix unite(std::vector<std::vector<Matrix>> AB) {
+Matrix unite(std::vector<std::vector<Matrix>>& AB) {
     int X = AB[0][0].data.size() + AB[0][1].data.size();
     int Y = AB[0][0].data.size() + AB[1][0].data.size();
     int X2 = log2(X), Y2 = log2(Y);
@@ -135,7 +136,7 @@ Matrix unite(std::vector<std::vector<Matrix>> AB) {
     return ret;
 }
 
-Matrix strassen(Matrix t1, Matrix t2) {
+Matrix strassen(Matrix& t1, Matrix& t2) {
     std::vector<std::vector<Matrix>> A = separating(t1), B = separating(t2), AB(2, std::vector<Matrix>(2));
     auto D = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1]);
     auto D1 = (A[0][1] - A[1][1]) * (B[1][0] + B[1][1]);
@@ -151,13 +152,9 @@ Matrix strassen(Matrix t1, Matrix t2) {
     return unite(AB);
 }
 
-int main()
-{
-    //std::vector<std::vector<int>> v1 = {{1, 1}, {1,1}, {10, 10}}, v2 = {{5, 7}, {2,3}, {3, 4}}, v3;
-    //v3 = v1 + v2;
+int main() {
     Matrix t1({{1, 1}, {1,1}, {10, 10}});
     Matrix t2({{5,7,2},{3,3,4}});
-    //Matrix a1 = t1 + t2;
     Matrix a2 = t1 * t2;
     a2.print();
     std::cout << std::endl;
