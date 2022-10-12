@@ -1,6 +1,7 @@
 #define THREAD_NUM 12
-//#define pragmapar for simd
 #define pragmapar for
+#define MSIZE 1024
+//#define pragmapar for simd
 #include <vector>
 #include <iostream>
 #include <omp.h>
@@ -12,6 +13,11 @@ class Matrix {
     Matrix(int X, int Y);
     Matrix(std::vector<std::vector<int>> dat);
 };
+
+
+int m1[MSIZE][MSIZE];
+int m2[MSIZE][MSIZE];
+int m3[MSIZE][MSIZE];
 
 Matrix::Matrix() {}
 
@@ -89,12 +95,26 @@ void Matrix::print() {
 
 Matrix operator * (Matrix t1, Matrix t2) {
     std::vector<std::vector<int>> tdata(t1.data.size(), std::vector<int>(t2.data[0].size()));
-    #pragma omp parallel pragmapar collapse(3)
-    for (int x = 0; x < t1.data.size(); x++)
-      for (int z = 0; z < t2.data[0].size(); z++)
-        for (int y = 0; y < t1.data[0].size(); y++)
+    int N = t1.data.size();
+    #pragma omp parallel for
+    for (int x = 0; x < N; x++)
+      for (int z = 0; z < N; z++)
+        for (int y = 0; y < N; y++)
           tdata[x][z] += t1.data[x][y] * t2.data[y][z];
     return Matrix(tdata);
+}
+
+
+inline void multm (int m1[MSIZE][MSIZE], int m2[MSIZE][MSIZE], int m3[MSIZE][MSIZE]) {
+    int N = MSIZE;
+    for (int x = 0; x < N; x++) {
+      for (int z = 0; z < N; z++) {
+        #pragma omp simd reduction(+:m3[x][z])
+        for (int y = 0; y < N; y++) {
+          m3[x][z] += m1[x][y] * m2[y][z]; 
+          }
+      }
+    }
 }
 
 int log2(int x) {
@@ -102,6 +122,14 @@ int log2(int x) {
     while (full_X < x)
         full_X <<= 1;
     return full_X >> 1;
+}
+
+void print_sm(int m[MSIZE][MSIZE]) {
+    for (int i = 0; i < MSIZE; i++) {
+        for (int j = 0; j < MSIZE; j++)
+            std::cout << m[i][j] << " ";
+        std::cout << std::endl;
+    }
 }
 
 std::vector<std::vector<Matrix>> separating(Matrix& t) {
@@ -175,6 +203,18 @@ Matrix square_rand_matrix(int siz) {
     return ret;
 }
 
+void sqrmandom(int m[MSIZE][MSIZE]) {
+    for (int i = 0; i < MSIZE; i++)
+        for (int j = 0; j < MSIZE; j++)
+            m[i][j] = rand() % 10;
+}
+
+void set_nullm(int m[MSIZE][MSIZE]) {
+    for (int i = 0; i < MSIZE; i++)
+        for (int j = 0; j < MSIZE; j++)
+            m[i][j] = 0;
+}
+
 int main(int argc, char* argv[]) {
     int nthr = 1;
     int siz = 16;
@@ -183,20 +223,25 @@ int main(int argc, char* argv[]) {
     if (argc > 2)
         siz = atoi(argv[2]);
     omp_set_num_threads(nthr);
-    Matrix t1 = square_rand_matrix(siz), t2 = square_rand_matrix(siz);
+    sqrmandom(m1);
+    sqrmandom(m2);
+    set_nullm(m3);
+    // //Matrix t1 = square_rand_matrix(siz), t2 = square_rand_matrix(siz);
     double start = omp_get_wtime(), end = 0;
-    Matrix a2 = t1 * t2;
+    multm(m1,m2,m3);
+    //Matrix a2 = t1 * t2;
     std::cout << omp_get_wtime() - start << std::endl;
-    //std::cout << std::endl;
-    start = omp_get_wtime(), end = 0;
-    Matrix a3 = strassen(t1, t2);
-    std::cout << omp_get_wtime() - start << std::endl;
+    std::cout << std::endl;
+    // start = omp_get_wtime(), end = 0;
+    // Matrix a3 = strassen(t1, t2);
+    // std::cout << omp_get_wtime() - start << std::endl;
     // a2.print();
     // std::cout << std::endl;
     // std::cout << std::endl;
     // a3.print();
-    if (a2 == a3)
-        std::cout << "correct" << std::endl;
-    else
-        std::cout << "incorrect" << std::endl; 
+    // if (a2 == a3)
+    //     std::cout << "correct" << std::endl;
+    // else
+    //     std::cout << "incorrect" << std::endl; 
+    return 0;
 }
