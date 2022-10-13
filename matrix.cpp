@@ -179,19 +179,104 @@ Matrix unite(std::vector<std::vector<Matrix>>& AB) {
     return ret;
 }
 
+// Matrix strassen(Matrix& t1, Matrix& t2) {
+//     std::vector<std::vector<Matrix>> A = separating(t1), B = separating(t2), AB(2, std::vector<Matrix>(2));
+//     auto D = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1]);
+//     auto D1 = (A[0][1] - A[1][1]) * (B[1][0] + B[1][1]);
+//     auto D2 = (A[1][0] - A[0][0]) * (B[0][0] + B[0][1]);
+//     auto H1 = (A[0][0] + A[0][1]) * B[1][1];
+//     auto H2 = (A[1][0] + A[1][1]) * B[0][0];
+//     auto V1 = A[1][1] * (B[1][0] - B[0][0]);
+//     auto V2 = A[0][0] * (B[0][1] - B[1][1]);
+//     AB[0][0] = D + D1 - H1 + V1;
+//     AB[0][1] = V2 + H1;
+//     AB[1][0] = V1 + H2;
+//     AB[1][1] = D + D2 + V2 - H2;
+//     return unite(AB);
+// }
+
+
 Matrix strassen(Matrix& t1, Matrix& t2) {
     std::vector<std::vector<Matrix>> A = separating(t1), B = separating(t2), AB(2, std::vector<Matrix>(2));
-    auto D = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1]);
-    auto D1 = (A[0][1] - A[1][1]) * (B[1][0] + B[1][1]);
-    auto D2 = (A[1][0] - A[0][0]) * (B[0][0] + B[0][1]);
-    auto H1 = (A[0][0] + A[0][1]) * B[1][1];
-    auto H2 = (A[1][0] + A[1][1]) * B[0][0];
-    auto V1 = A[1][1] * (B[1][0] - B[0][0]);
-    auto V2 = A[0][0] * (B[0][1] - B[1][1]);
-    AB[0][0] = D + D1 - H1 + V1;
-    AB[0][1] = V2 + H1;
-    AB[1][0] = V1 + H2;
-    AB[1][1] = D + D2 + V2 - H2;
+    Matrix T1(A.size(), (A.size())), T2(A.size(), (A.size())), T3(A.size(), (A.size())), T4(A.size(), (A.size())), T5(A.size(), (A.size())), T6(A.size(), (A.size())), T7(A.size(), (A.size())), T8(A.size(), (A.size())), T9(A.size(), (A.size())), T10(A.size(), (A.size())), T11(A.size(), (A.size())), T12(A.size(), (A.size())), T13(A.size(), (A.size())), T14(A.size(), (A.size())), T15(A.size(), (A.size())), T16(A.size(), (A.size())), T17(A.size(), (A.size())), T18(A.size(), (A.size()));
+    Matrix S1(A.size(), (A.size())), S2(A.size(), (A.size())), S3(A.size(), (A.size())), S4(A.size(), (A.size())), S5(A.size(), (A.size())), S6(A.size(), (A.size())), S7(A.size(), (A.size()));
+    // std::cout << "KEK" << std::endl;
+    #pragma omp parallel
+    {
+    #pragma omp single
+    {
+    #pragma omp task
+    T1 = A[0][0] + A[1][1];
+    #pragma omp task
+    T2 = B[0][0] + B[1][1];
+    #pragma omp task
+    T3 = A[1][0] + A[1][1];
+    #pragma omp task
+    T4 = B[0][1] - B[1][1];
+    #pragma omp task
+    T5 = B[1][0] - B[0][0];
+    #pragma omp task
+    T6 = A[0][0] + A[0][1];
+    #pragma omp task
+    T7 = A[1][0] - A[0][0];
+    #pragma omp task
+    T8 = B[0][0] + B[0][1];
+    #pragma omp task
+    T9 = A[0][1] - A[1][1];
+    #pragma omp task
+    T10 = B[1][0] + B[1][1];
+    #pragma omp taskwait
+    // std::cout << "end1phase" << std::endl;
+    #pragma omp task
+    S1 = T1*T2;
+    #pragma omp task
+    S2 = T3*B[0][0];
+    #pragma omp task
+    S3 = A[0][0]*T4;
+    #pragma omp task
+    S4 = A[1][1]*T5;
+    #pragma omp task
+    S5 = T6*B[1][1];
+    #pragma omp task
+    S6 = T7*T8;
+    #pragma omp task
+    S7 = T9*T10;
+    #pragma omp taskwait
+    // std::cout << "end2phase" << std::endl;
+
+    #pragma omp task
+    T11 = S1 + S4;
+    #pragma omp task
+    T12 = S2+S4;
+    #pragma omp task
+    T13 = S3 + S6;
+    #pragma omp task
+    T14 = S7-S5;
+    #pragma omp task
+    T16 = S3+S5;
+    #pragma omp task
+    T17 = S1-S2;
+
+    #pragma omp taskwait
+
+    #pragma omp task
+    T15= T11+T14;
+    #pragma omp task
+    T18=T13+T17;
+
+    #pragma omp taskwait
+    }
+    }
+    // std::cout << "endstrassen" << std::endl;
+    // for (auto i:T15.data){
+    //     for (auto j:i)
+    //         std::cout << j << " ";
+    //     std::cout << std::endl;
+    // }
+    AB[0][0] = T15;//D + D1 - H1 + V1;
+    AB[0][1] = T16;//V2 + H1;
+    AB[1][0] = T12;//V1 + H2;
+    AB[1][1] = T18;//D + D2 + V2 - H2;
     return unite(AB);
 }
 
@@ -199,7 +284,7 @@ Matrix square_rand_matrix(int siz) {
     Matrix ret(siz, siz);
     for (int i = 0; i < siz; i++)
         for (int j = 0; j < siz; j++)
-            ret.data[i][j] = rand() % 1024;
+            ret.data[i][j] = rand() % 6;
     return ret;
 }
 
@@ -223,21 +308,24 @@ int main(int argc, char* argv[]) {
     if (argc > 2)
         siz = atoi(argv[2]);
     omp_set_num_threads(nthr);
-    sqrmandom(m1);
-    sqrmandom(m2);
-    set_nullm(m3);
-    // //Matrix t1 = square_rand_matrix(siz), t2 = square_rand_matrix(siz);
+    // sqrmandom(m1);
+    // sqrmandom(m2);
+    // set_nullm(m3);
+    Matrix t1 = square_rand_matrix(siz), t2 = square_rand_matrix(siz);
+    // t1.print();
+    // t2.print();
     double start = omp_get_wtime(), end = 0;
-    multm(m1,m2,m3);
+    // multm(m1,m2,m3);
     //Matrix a2 = t1 * t2;
-    std::cout << omp_get_wtime() - start << std::endl;
-    std::cout << std::endl;
-    // start = omp_get_wtime(), end = 0;
-    // Matrix a3 = strassen(t1, t2);
     // std::cout << omp_get_wtime() - start << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "Hey" << std::endl;
+    start = omp_get_wtime(), end = 0;
+    Matrix a3 = strassen(t1, t2);
+    std::cout << omp_get_wtime() - start << std::endl;
     // a2.print();
-    // std::cout << std::endl;
-    // std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
     // a3.print();
     // if (a2 == a3)
     //     std::cout << "correct" << std::endl;
