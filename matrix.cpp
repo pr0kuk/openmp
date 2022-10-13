@@ -179,6 +179,31 @@ Matrix unite(std::vector<std::vector<Matrix>>& AB) {
     return ret;
 }
 
+
+// Matrix unite(Matrix& A, Matrix& B, Matrix& C, Matrix& D) {
+//     int X = A.data.size() + B.data.size();
+//     int Y = A.data.size() + C.data.size();
+//     int X2 = log2(X), Y2 = log2(Y);
+//     Matrix ret(X, Y);
+//     #pragma omp parallel pragmapar collapse(2) 
+//       for (int i = 0; i < X2; i++)
+//         for (int j = 0; j < Y2; j++)
+//           ret.data[i][j]= A.data[i][j];
+//     #pragma omp parallel pragmapar collapse(2) 
+//       for (int i = 0; i < X2; i++)
+//         for (int j = Y2; j < Y; j++)
+//           ret.data[i][j] = B.data[i][j - Y2];
+//     #pragma omp parallel pragmapar collapse(2) 
+//       for (int i = X2; i < X; i++)
+//         for (int j = 0; j < Y2; j++)
+//           ret.data[i][j] = C.data[i - X2][j];
+//     #pragma omp parallel pragmapar collapse(2) 
+//       for (int i = X2; i < X; i++)
+//         for (int j = Y2; j < Y; j++)
+//           ret.data[i][j] = D.data[i - X2][j - Y2];
+//     return ret;
+// }
+
 // Matrix strassen(Matrix& t1, Matrix& t2) {
 //     std::vector<std::vector<Matrix>> A = separating(t1), B = separating(t2), AB(2, std::vector<Matrix>(2));
 //     auto D = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1]);
@@ -248,30 +273,26 @@ Matrix strassen(Matrix& t1, Matrix& t2) {
     #pragma omp task
     T2 = T1 + T5;
     #pragma omp task
-    T8 = T3+T5;
+    AB[1][0] = T3+T5;
     #pragma omp task
     T7 = T4 + T7;
     #pragma omp task
     T9 = T9-T6;
     #pragma omp task
-    T4 = T4+T6;
+    AB[0][1] = T4+T6;
     #pragma omp task
-    T3 = T1-T3;
+    T10 = T1-T3;
 
     #pragma omp taskwait
 
     #pragma omp task
-    T2= T2+T9;
+    AB[0][0]= T2+T9;
     #pragma omp task
-    T3=T7+T3;
+    AB[1][1]=T7+T10;
 
     #pragma omp taskwait
     }
     }
-    AB[0][0] = T2;
-    AB[0][1] = T4;
-    AB[1][0] = T8;
-    AB[1][1] = T3;
     return unite(AB);
 }
 
@@ -312,7 +333,7 @@ int main(int argc, char* argv[]) {
     double start = omp_get_wtime(), end = 0;
     // multm(m1,m2,m3);
     //Matrix a2 = t1 * t2;
-   // std::cout << omp_get_wtime() - start << std::endl;
+    // std::cout << omp_get_wtime() - start << std::endl;
     // std::cout << std::endl;
     // std::cout << "Hey" << std::endl;
     start = omp_get_wtime(), end = 0;
