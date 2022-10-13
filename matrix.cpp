@@ -222,7 +222,7 @@ Matrix unite(std::vector<std::vector<Matrix>>& AB) {
 
 
 Matrix strassen(Matrix& t1, Matrix& t2) {
-    if (t1.data.size() <= 2)
+    if (t1.data.size() <= 8)
         return t1*t2;
     std::vector<std::vector<Matrix>> A = separating(t1), B = separating(t2), AB(2, std::vector<Matrix>(2));
     Matrix T1(A.size(), (A.size())), T2(A.size(), (A.size())), T3(A.size(), (A.size())), T4(A.size(), (A.size())), T5(A.size(), (A.size())), T6(A.size(), (A.size())), T7(A.size(), (A.size())), T8(A.size(), (A.size())), T9(A.size(), (A.size())), T10(A.size(), (A.size()));//, T11(A.size(), (A.size())), T12(A.size(), (A.size())), T13(A.size(), (A.size())), T14(A.size(), (A.size())), T15(A.size(), (A.size())), T16(A.size(), (A.size())), T17(A.size(), (A.size())), T18(A.size(), (A.size()));
