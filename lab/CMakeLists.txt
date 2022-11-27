@@ -1,0 +1,18 @@
+cmake_minimum_required (VERSION 3.10)
+project (lab VERSION 1.0.0)
+set (CMAKE_CXX_COMPILER "/usr/bin/g++")
+set (CMAKE_CXX_FLAGS    "-Wall -std=c++2a")
+include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+find_package (OpenMP REQUIRED)
+find_package(MPI REQUIRED)
+find_package(Threads REQUIRED)
+find_package (GTest REQUIRED)
+
+message(STATUS "Using MPI_INCLUDE_PATH: ${MPI_INCLUDE_PATH}")
+message(STATUS "Using MPI_C_LIBRARIES: ${MPI_C_LIBRARIES}")
+
+add_executable (openmp openmp.cpp)
+add_executable (mpi mpi.cpp)
+
+target_link_libraries (openmp PUBLIC OpenMP::OpenMP_CXX Threads::Threads "${GTEST_BOTH_LIBRARIES}")
+target_link_libraries(mpi PUBLIC ${MPI_C_LIBRARIES} Threads::Threads "${GTEST_BOTH_LIBRARIES}")

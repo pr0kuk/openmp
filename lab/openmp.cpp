@@ -58,7 +58,7 @@ int print_m(const char* const s, double m[ISIZE][JSIZE])
     FILE* ff = fopen(s, "w");
     for(int i=0; i < ISIZE; i++){
         for (int j=0; j < JSIZE; j++){
-            fprintf(ff,"%f ",a[i][j]);
+            fprintf(ff,"%f ",m[i][j]);
         }
     fprintf(ff,"\n");
     }
@@ -83,7 +83,7 @@ TEST(test, test1) {
     time = sequential(a);
     FILE* d = fopen("data.txt", "w");
     fprintf(d, "1 %f\n", time);
-    for (int i = 2; i <= 12; ++i) {
+    for (int i = 2; i <= THREAD_NUM; ++i) {
         CHECK(i);
     }
     // print_m("res_seq.txt", a);
@@ -92,10 +92,6 @@ TEST(test, test1) {
 }
 
 int main(int argc, char * argv[]) {
-    int nthr = 1;
-    if (argc >= 2)
-        nthr = atoi(argv[1]);
-    omp_set_num_threads(nthr);
   ::testing::InitGoogleTest (&argc , argv);
   return RUN_ALL_TESTS ();
 }
