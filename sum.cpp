@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     }
     int n = std::stoi(argv[1]);
     double sum = 1.0;
-    #pragma omp parallel for reduction(+ : sum) num_threads(n)
+    #pragma omp parallel for reduction(+ : sum) num_threads(4)
     for (int i = 2; i <= n; ++i) {
         sum += 1.0 / i;
     }
