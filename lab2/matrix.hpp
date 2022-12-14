@@ -3,14 +3,16 @@
 #include <random>
 #include <iostream>
 #include <omp.h>
-#define SIZE 4095
-
+static const long long int Q = 12;
+static const long long int SIZE = ((1<<Q) - 1);
+extern int NUMTHREADS;
 class Matrix {
     public:
     std::vector<std::vector<long double>> data = std::vector<std::vector<long double>>(SIZE, std::vector<long double>(SIZE,0));;
     std::vector<long double> f = std::vector<long double>(SIZE,0);
     std::vector<long double> y = std::vector<long double>(SIZE,0);
     const long double hh = (long double)1/SIZE/SIZE;
+    long double b = 0;
     long long int stride = 1;
     void red();
     void obr();
@@ -19,6 +21,7 @@ class Matrix {
     void init_M();
     void init_f();
     void init_y();
+    void calc(long double b);
     Matrix() {init_M(); init_y(); init_f();}
 };
 
@@ -26,6 +29,7 @@ void Matrix::init_M()
 {
     data[0][0] = 1;
     data[SIZE-1][SIZE-1] = 1;
+    #pragma omp parallel for collapse(2) num_threads(NUMTHREADS)
     for (long long int i = 1; i < SIZE-1; i++)
     {
         for (long long int j = 0; j < SIZE; j++)
@@ -54,7 +58,7 @@ void Matrix::init_y ()
 void Matrix::init_f ()
 {
     f[0] = 1;
-    f[SIZE-1] = 0;
+    f[SIZE-1] = b;
     for (long long int i = 1; i < SIZE-1; i++) {
         f[i] = (exp(y[i])+(exp(y[i+1])- 2*exp(y[i]) + exp(y[i-1]))/12);
     }
