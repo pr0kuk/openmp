@@ -2,7 +2,8 @@
 #include <vector>
 #include <random>
 #include <iostream>
-#define SIZE 127
+#include <omp.h>
+#define SIZE 4095
 
 class Matrix {
     public:
