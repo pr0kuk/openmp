@@ -8,11 +8,9 @@ void Matrix::red()
         for(long long int i = low - 1; i < SIZE; i += stride * 2) {
             long double alpha = -data[i][i-1] / data[i - stride][i-stride];
             long double gamma = -data[i][i+1] / data[i + stride][i+stride];
-            if (i - stride >= 1)
-                data[i][i-1] = alpha * data[i - stride][i-stride-1];
+            data[i][i-1] = alpha * data[i - stride][i-stride-1];
             data[i][i] = alpha * data[i - stride][i-stride+1] + data[i][i] + gamma * data[i + stride][i+stride-1];
-            if (i + stride < SIZE - 1)
-                data[i][i+1] = gamma * data[i + stride][i+stride+1];
+            data[i][i+1] = gamma * data[i + stride][i+stride+1];
             f[i] = alpha * f[i - stride] + f[i] + gamma * f[i + stride];
         }
     }
