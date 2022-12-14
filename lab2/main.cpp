@@ -53,10 +53,11 @@ int main(int argc, char* argv[])
     //std::cout << "NUMTHREADS: " << NUMTHREADS << std::endl;
     Matrix M;
     double start = omp_get_wtime(), end = 0;
-    for (long double i = 0; i <= 1; i += 0.1)
-        M.calc(i);
-    //M.print();
+    //for (long double i = 0; i <= 1; i += 0.1)
+    //    M.calc(i);
+    M.calc(0.4);
+    M.print_y();
     end = omp_get_wtime();
-    std::cout << "TIME: " << end-start << std::endl;
+    //std::cout << "TIME: " << end-start << std::endl;
     return 0;
 }

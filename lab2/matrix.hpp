@@ -3,7 +3,7 @@
 #include <random>
 #include <iostream>
 #include <omp.h>
-static const long long int Q = 12;
+static const long long int Q = 10;
 static const long long int SIZE = ((1<<Q) - 1);
 extern int NUMTHREADS;
 class Matrix {

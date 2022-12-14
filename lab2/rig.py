@@ -1,6 +1,6 @@
 import numpy as np
 import math
-Q = 3
+Q = 10
 N = 2**Q-1
 h = 1/N
 h2 = h * h
@@ -13,7 +13,7 @@ def geterr(yn, y):
 def getf(y):
     fn = np.ones(N)
     fn[0] = 1
-    fn[N-1] = 1
+    fn[N-1] = 0.4
     for i in range(1,N-1):
         fn[i] = (math.exp(y[i])+(math.exp(y[i+1])- 2*math.exp(y[i]) + math.exp(y[i-1]))/12)
     return fn
@@ -35,14 +35,13 @@ def prep():
 
 y,yn,f,M = prep()
 
-for j in range(10):
+for j in range(100):
     yn = np.linalg.solve(M, f)
     f = getf(yn)
     y = yn.copy()
-
 file = open('sam.txt', 'w')
-s = ''
-for i in y:
-    s += str(i) + ' '
+s = '1 '
+for i in y[1:]:
+    s += str(round(i,6)) + ' '
 file.write(s)
 file.write('\n')
